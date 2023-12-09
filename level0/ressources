@@ -1,0 +1,67 @@
+./level0
+= segfault
+./level0 test 
+= "No !"
+
+hexdump -C level0 > hex
+/No
+
+0007d340  03 00 00 00 01 00 02 00  2f 62 69 6e 2f 73 68 00  |......../bin/sh.|
+0007d350  4e 6f 20 21 0a 00 46 41  54 41 4c 3a 20 6b 65 72  |No !..FATAL: ker|
+0007d360  6e 65 6c 20 74 6f 6f 20  6f 6c 64 0a 00 2f 64 65  |nel too old../de|
+0007d370  76 2f 75 72 61 6e 64 6f  6d 00 00 00 46 41 54 41  |v/urandom...FATA|
+0007d380  4c 3a 20 63 61 6e 6e 6f  74 20 64 65 74 65 72 6d  |L: cannot determ|
+0007d390  69 6e 65 20 6b 65 72 6e  65 6c 20 76 65 72 73 69  |ine kernel versi|
+0007d3a0  6f 6e 0a 00 2f 64 65 76  2f 66 75 6c 6c 00 2f 64  |on../dev/full./d|
+0007d3b0  65 76 2f 6e 75 6c 6c 00  73 65 74 5f 74 68 72 65  |ev/null.set_thre|
+0007d3c0  61 64 5f 61 72 65 61 20  66 61 69 6c 65 64 20 77  |ad_area failed w|
+0007d3d0  68 65 6e 20 73 65 74 74  69 6e 67 20 75 70 20 74  |hen setting up t|
+0007d3e0  68 72 65 61 64 2d 6c 6f  63 61 6c 20 73 74 6f 72  |hread-local stor|
+0007d3f0  61 67 65 0a 00 00 00 00  75 6e 65 78 70 65 63 74  |age.....unexpect|
+0007d400  65 64 20 72 65 6c 6f 63  20 74 79 70 65 20 69 6e  |ed reloc type in|
+0007d410  20 73 74 61 74 69 63 20  62 69 6e 61 72 79 00 63  | static binary.c|
+0007d420  78 61 5f 61 74 65 78 69  74 2e 63 00 6c 20 21 3d  |xa_atexit.c.l !=|
+0007d430  20 28 28 76 6f 69 64 20  2a 29 30 29 00 5f 5f 6e  | ((void *)0).__n|
+0007d440  65 77 5f 65 78 69 74 66  6e 00 00 00 00 00 00 00  |ew_exitfn.......|
+
+On voit que le script semble executer /bin/sh print No..
+
+objdump -d level0
+
+08048ec0 <main>:
+ 8048ec0:       55                      push   %ebp
+ 8048ec1:       89 e5                   mov    %esp,%ebp
+ 8048ec3:       83 e4 f0                and    $0xfffffff0,%esp
+ 8048ec6:       83 ec 20                sub    $0x20,%esp
+ 8048ec9:       8b 45 0c                mov    0xc(%ebp),%eax
+ 8048ecc:       83 c0 04                add    $0x4,%eax
+ 8048ecf:       8b 00                   mov    (%eax),%eax
+ 8048ed1:       89 04 24                mov    %eax,(%esp)
+ 8048ed4:       e8 37 08 00 00          call   8049710 <atoi>
+ 8048ed9:       3d a7 01 00 00          cmp    $0x1a7,%eax
+ 8048ede:       75 78                   jne    8048f58 <main+0x98>
+
+il compare le resultat de atoi a "423" si ce n'est pas egal il jump a l'instruction : 8048f58
+
+si c'est egal on voit que l'executable lance une commande via execve surement /bin/sh comme on l'a vu dans hexdump plus haut 
+
+donc il faut que la valeur soit = 423 pour pouvoir passer ses commandes 
+au debut du main on voit plusieurs variables assignées :
+08048ec0 <main>:
+ 8048ec0:       55                      push   %ebp
+ 8048ec1:       89 e5                   mov    %esp,%ebp
+ 8048ec3:       83 e4 f0                and    $0xfffffff0,%esp
+ 8048ec6:       83 ec 20                sub    $0x20,%esp
+ 8048ec9:       8b 45 0c                mov    0xc(%ebp),%eax
+ 8048ecc:       83 c0 04                add    $0x4,%eax
+ 8048ecf:       8b 00                   mov    (%eax),%eax
+ 8048ed1:       89 04 24                mov    %eax,(%esp)
+ 8048ed4:       e8 37 08 00 00          call   8049710 <atoi>
+ 8048ed9:       3d a7 01 00 00          cmp    $0x1a7,%eax
+
+
+puis le atoi qui transforme en int puis fait une comparaison avec 423
+on suppose donc que les variables assignées sont les arguments 
+
+si on test en faisant ./level0 423 
+un bash est lancé en faisant : whoami on est le user level1 on peut donc faire la commande : cat /home/user/level1/.pass
